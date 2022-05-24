@@ -8,64 +8,64 @@ clock = pygame.time.Clock()
 screen = pygame.display.set_mode((600, 400))
 pygame.display.set_caption("Dice Roll Stimulator")
 
-background_surf = pygame.image.load('graphics/background2.png')
+background_image = pygame.image.load('graphics/background2.png')
 font = pygame.font.Font('font/SunnyspellsRegular.otf', 50)
-start_text = font.render("press SPACEBAR to start rolling", True, (255, 235, 193))
+roll_message = font.render("press SPACEBAR to start rolling", True, (255, 235, 193))
 
-dice = []
-roll_animation_images = []
+dice_images = []
+dice_rolling_images = []
 
-# since there are 8 animation images
+# since there are 6 dice images
+for num in range(1, 7):
+    dice_image = pygame.image.load('graphics/dice/' + str(num) + '.png')
+    dice_images.append(dice_image)
+
+# since there are 8 rolling dice images
 for num in range(1, 9):
-    # since only six dice images
-    if num <= 6:
-        dice_image = pygame.image.load('graphics/dice/' + str(num) + '.png')
-        dice.append(dice_image)
+    dice_rolling_image = pygame.image.load('graphics/animation/roll' + str(num) + '.png')
+    dice_rolling_images.append(dice_rolling_image)
 
-    roll_animation_image = pygame.image.load('graphics/animation/roll' + str(num) + '.png')
-    roll_animation_images.append(roll_animation_image)
+rolling_aud = pygame.mixer.Sound('audio/roll_aud.mp3')
+rolling_stop_aud = pygame.mixer.Sound('audio/roll_stop_aud.mp3')
 
-roll_aud = pygame.mixer.Sound('audio/roll_aud.mp3')
-roll_stop_aud = pygame.mixer.Sound('audio/roll_stop_aud.mp3')
-
-first = True
-dice_num = dice[0]
 is_rolling = False
-rolling_counter = 0
+rolling_images_counter = 0
+dice_num_image = dice_images[0]
+first = True
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
+    screen.blit(background_image, (0, 0))
+    screen.blit(roll_message, (50, 300))
 
-    screen.blit(background_surf, (0, 0))
-    screen.blit(start_text, (50, 300))
-
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_SPACE] and not is_rolling:
+    key = pygame.key.get_pressed()
+    if key[pygame.K_SPACE] and is_rolling is False:
         is_rolling = True
-        roll_aud.play()
-        roll_num = random.randint(1, 6)
-        dice_num = dice[roll_num - 1]
+        rolling_aud.play()
+        rand_num = random.randint(0, 5)
+        dice_num_image = dice_images[rand_num]
+        screen.blit(dice_rolling_images[rolling_images_counter], (250, 150))
+        rolling_images_counter += 1
         first = True
-        screen.blit(roll_animation_images[rolling_counter], (250, 150))
-        rolling_counter += 1
+
+        # start rolling and calculate dice num
     else:
         if is_rolling:
-            screen.blit(roll_animation_images[rolling_counter], (250, 150))
-            rolling_counter += 1
-
-            if rolling_counter >= 8:
-                rolling_counter = 0
+            # showing rolling animation images
+            screen.blit(dice_rolling_images[rolling_images_counter], (250, 150))
+            rolling_images_counter += 1
+            if rolling_images_counter >= 8:
                 is_rolling = False
+                rolling_images_counter = 0
 
         else:
-            screen.blit(dice_num, (250, 150))
+            screen.blit(dice_num_image, (250, 150))
             if first:
-                roll_stop_aud.play()
+                rolling_stop_aud.play()
                 first = False
+            # show the dice which contains a number
 
     pygame.display.update()
     clock.tick(13)
-
-
